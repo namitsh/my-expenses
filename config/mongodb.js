@@ -20,4 +20,9 @@ MongoClient.prototype.initialize = function(){
         })
 }
 
+MongoClient.prototype.mongoID = function(){
+    var id = mongoose.Types.ObjectId();
+    return id;
+}
+
 module.exports = new MongoClient();
