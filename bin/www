@@ -1,0 +1,28 @@
+const http = require('http');
+const app = require('../app');
+
+const NODE_ENV = process.env.NODE_ENV || 'dev';
+const PORT = process.env.PORT || 8000;
+
+const server = http.createServer(app);
+const mongoClient = require('../config/mongodb');
+
+async function main(){
+    
+    try{
+        console.log("CONNECTING TO DATABASE...");
+        await mongoClient.initialize();
+        console.log("SERVER INITIATING...");
+        server.listen(PORT, ()=>{
+            console.log(`SUCCESSFULLY CONNECTED TO SERVER`);
+            console.log(`PORT:\t\t${PORT}`);
+            console.log(`MODE:\t\t${NODE_ENV}`);
+        });
+    }
+    catch(err){
+        console.log(err);
+        process.exit(1);
+    }
+}
+
+main();
