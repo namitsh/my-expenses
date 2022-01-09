@@ -5,7 +5,7 @@ function MongoClient() {
         useNewUrlParser: true, 
         useUnifiedTopology: true
     };
-    this.connectionUri = process.env.MONGO_DB_URI || 'mongodbs://localhost:27017/my-expenses';
+    this.connectionUri = process.env.MONGO_DB_URI || 'mongodb://localhost:27017/my-expenses';
 }
 
 MongoClient.prototype.initialize = function(){
