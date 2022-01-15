@@ -11,7 +11,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended:true }));
 
 // routers;
-
+app.use('/accounts', require('./routes').accounts)
+app.use('/transactions', require('./routes').transactions)
 
 // Handle 404
 app.use(function(req, res, next) {
