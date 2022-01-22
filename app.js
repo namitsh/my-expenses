@@ -2,6 +2,7 @@
 
 const express = require('express');
 const morgan = require('morgan');
+const { errorHandler } = require('./middlewares');
 const app = express();
 
 // basic express config.
@@ -17,15 +18,14 @@ app.use('/transactions', require('./routes').transactions)
 // Handle 404
 app.use(function(req, res, next) {
     res.status(404);
-    res.json({"message": "Page not found"})
+    res.json({
+        status: 404,
+        message: "Page not found"})
     // TODO: WORK ON ERROR HANDLING 
     next();
 });
   
 // Handle 500
-app.use(function(error, req, res, next) {
-    // TODO: create a errorHandler middleware.
-    res.send('500: Internal Server Error', 500);
-});
+app.use(errorHandler);
 
 module.exports = app;
