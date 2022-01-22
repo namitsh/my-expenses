@@ -29,7 +29,6 @@ exports.getAccount = async (req, res, next)=>{
 }
 
 exports.listAccounts = async (req,res, next)=>{
-    const id = req.params.accountId;
     try{
         const acc = await accounts.getAll();
         res.status(200).json(acc);
@@ -43,10 +42,10 @@ exports.listAccounts = async (req,res, next)=>{
 exports.updateAccount = async (req,res, next)=>{
     // do something.
     const id = req.params.id;
-    const {name, balance, description, type} = req.body;
+    const data = req.body;
     try{
-        const updatedAccount = await accounts.update(id, name, balance, type, description);
-        res.json(202).json(updatedAccount);
+        const updatedAccount = await accounts.update(id, data);
+        res.status(200).json(updatedAccount);
     }
     catch(err){
         const httpError = createHttpError(400, err);

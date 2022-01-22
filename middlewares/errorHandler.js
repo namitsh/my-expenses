@@ -5,9 +5,9 @@ const devErrorHandler = (err, req, res, next)=>{
     res.status(err.statusCode).json({
         status: err.statusCode,
         name: err.name,
+        message: err.message,
         path: err.path,
         errors: err.errors,
-        message: err.mesasge,
         stack: err.stack
     });
     next();

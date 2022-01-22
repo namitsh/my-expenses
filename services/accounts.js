@@ -1,5 +1,19 @@
 const Account = require('../models').account;
-const transactions = require('./transactions');
+const Transaction = require('../models').transaction;
+
+const updateAccountFromTransaction = async (id, balance)=>{
+    let patchObject = { balance: balance };
+    try{
+        const account = await Account.findById(id);
+        const updatedAccount = await Account.findByIdAndUpdate(id, patchObject,{new:true});
+        if(!updatedAccount){
+            Promise.reject(`Account with id ${id} not found`);
+        }
+        return Promise.resolve(updatedAccount);
+    } catch(err) {
+        return Promise.reject(err);
+    }
+}
 
 exports.create = async (name, balance, type, description)=>{
     try{
@@ -19,7 +33,7 @@ exports.get = async (id)=>{
     try{
         const account = await Account.findById(id);
         if(!account){
-            return Promise.reject(new Error(`Account with id ${id} not found`));
+            return Promise.reject(`Account with id ${id} not found`);
         }
         return Promise.resolve(account);
     } catch(err){
@@ -37,55 +51,67 @@ exports.getAll = async ()=>{
 }
 
 
-exports.update = async (id,name,balance,type, description)=>{
-    // TODO : TEST THIS METHOD AFTER TRANSACTION SERVICE COMPLETES
-    let result = {};
-
+exports.update = async (id, data)=>{
     if(!id) return Promise.reject('Invalid Arguments');
-    if(!name && !balance && !type && !description) return Promise.reject('Invalid Arguments');
-    
+
+    // TODO : TEST THIS METHOD AFTER TRANSACTION SERVICE COMPLETES
+
+    let result = {};
+    if(!data.name && !data.balance && !data.type && !data.description){
+        return Promise.reject('Invalid Arguments');
+    }
+
     const session = await Account.startSession();
-    
     try{
         let transaction;
-        const account = await this.get(id);
+        session.startTransaction();
+        const account = await Account.findById(id).session(session);
         if(!account){
-            return Promise.reject(new Error(`Account with id ${id} not found`));
+            return Promise.reject(`Account with id ${id} not found`);
         }
-        if(name){
-            result.name = name;
-        }
-        if(balance){
-            result.balance = balance
+        if(data.name) result.name = data.name;
+        if(data.description) result.description = data.description;
+        if(data.type) result.type = data.type;
+        if(data.balance){
+            let transactionObj;
             // create a transacion according to the prev balance
             // if prev balance
-            if(balance>account.balance){
+            if(data.balance>account.balance){
                 // create a new transaction with income.
-                let transactionBalance = balance - account.balance;
-                transaction = await transactions.create(transactionBalance); 
+                let transactionBalance = data.balance - account.balance;
+                transactionObj = {
+                    account: account._id,
+                    transaction_type: 'income',
+                    amount: transactionBalance,
+                    category: 'MODIFIED_ACCOUNT_BALANCE'
+                }
             }
-            else if(balance<account.balance){
+            else if(data.balance<account.balance){
                 // create a new transaction with expense
-                let transactionBalance = account.balance - balance;
-                transaction = await transactions.create(transactionBalance);
-            } 
+                let transactionBalance = account.balance - data.balance;
+                transactionObj = {
+                    account: account._id,
+                    transaction_type: 'expense',
+                    amount: transactionBalance,
+                    category: 'MODIFIED_ACCOUNT_BALANCE'
+                }  
+            }
+            transaction = new Transaction(transactionObj);
+            await transaction.save({session: session});
+            result.balance = data.balance 
         }
-        if(description){
-            result.description = description;
-        }
-        if(type){
-            result.type = type;
-        }
-        const updatedAccount = await Account.findByIdAndUpdate(id, result,{new:true});
+        
+        const updatedAccount = await Account.findByIdAndUpdate(id, result,{new:true, runValidators: true}).
+        session(session);
         if(!updatedAccount){
             throw new Error(`Account with id ${id} not found`)
         }
         await session.commitTransaction();
-        return updatedAccount;
+        return Promise.resolve(updatedAccount);
     }
     catch(err){
-        session.abortTransaction();
-        throw(err);
+        await session.abortTransaction();
+        return Promise.reject(err);
     }
     finally{
         session.endSession();
