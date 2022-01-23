@@ -1,5 +1,4 @@
-const accounts = require('../services').accounts;
-const users = require('../services').users;
+const {accounts, transactions, users} = require('../services');
 const createHttpError = require('http-errors');
 
 exports.createAccount = async (req, res, next)=>{
@@ -73,9 +72,13 @@ exports.deleteAccount = async (req,res, next)=>{
     const id = req.params.id;
     // I am assuming here that user is saved in req.user;
     const userId = req.user._id; 
+    let deleteTranactions = req.query.delete_tranactions || false;
     
     try{
         const user = await users.get(userId)
+        if(deleteTranactions){
+            const deleted = await transactions.deleteAll(userId, id);
+        }
         const deletedAccount = await accounts.delete(id, user._id);
         res.status(202).json(deletedAccount);
     }

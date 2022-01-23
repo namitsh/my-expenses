@@ -1,4 +1,4 @@
-const users = require('../services').users
+const {users,transactions,accounts} = require('../services')
 const createHttpError = require('http-errors');
 
 exports.createUser = async (req,res,next)=>{
@@ -58,8 +58,22 @@ exports.deleteUser = async (req, res, next)=>{
     // do something
     const userId = req.user._id;
     try{
+        // first getAll accounts;
+        let acc = [];
+        const accountList = await accounts.getAll(userId); 
+
+        for(let accObj of accountList){
+            acc.push(accObj._id.toString());
+        }
+        console.log(acc);
+        // delete the transactions;
+        const successTrans = await transactions.deleteAll(userId, acc);
+        const successAccount = await accounts.deleteAll(acc, userId);
+        if(!successAccount || !successTrans){
+            return next(createHttpError(500))
+        }
         const user = await users.delete(userId);
-        res.status(202).json(user);
+        res.status(204).json('Success');
     } catch(err){
         next(createHttpError(400,err))
     }

@@ -31,6 +31,7 @@ exports.getAll = async (userId)=>{
     if(!userId) return Promise.reject('Invalid Arguments');
     try{
         const accounts = await Account.find({user: userId});
+        console.log(accounts);
         return Promise.resolve(accounts);
     } catch(err) {
         return Promise.reject(err);
@@ -115,6 +116,17 @@ exports.delete = async (id, userId)=>{
             return Promise.reject(`Account with id ${id} not found`);
         }
         return Promise.resolve(deletedAccount);
+    } catch(err){
+        return Promise.reject(err);
+    }
+}
+
+exports.deleteAll = async (accountIds, userId)=>{
+    if(!accountIds || !userId) return Promise.reject('Invalid Arguments')
+    try{
+        const deleted = await Account.deleteMany({_id: accountIds, user: userId});
+        console.log('In accounts')
+        return Promise.resolve(deleted);
     } catch(err){
         return Promise.reject(err);
     }

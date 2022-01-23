@@ -139,3 +139,15 @@ exports.delete = async (id, userId)=>{
         return Promise.reject(err);
     }
 }
+
+exports.deleteAll = async (userId, accountId) =>{
+    if(!userId) return Promise.reject('Invalid Arguments');
+    try{
+        const result = await Transaction.deleteMany({user: userId, account: accountId});
+        console.log('In transactions')
+        console.log(result);
+        return Promise.resolve('Success');  
+    } catch(err) {
+        return Promise.reject(err);
+    }
+}
