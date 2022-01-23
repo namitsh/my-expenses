@@ -1,20 +1,6 @@
 const Account = require('../models').account;
 const Transaction = require('../models').transaction;
 
-const updateAccountFromTransaction = async (id, balance)=>{
-    let patchObject = { balance: balance };
-    try{
-        const account = await Account.findById(id);
-        const updatedAccount = await Account.findByIdAndUpdate(id, patchObject,{new:true});
-        if(!updatedAccount){
-            Promise.reject(`Account with id ${id} not found`);
-        }
-        return Promise.resolve(updatedAccount);
-    } catch(err) {
-        return Promise.reject(err);
-    }
-}
-
 exports.create = async (name, balance, type, description)=>{
     try{
         const account = new Account({
