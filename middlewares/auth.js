@@ -8,7 +8,6 @@ exports.isAuthorized = async (req,res,next)=>{
         if(!token) return next(new createHttpError[403]);
         const decodedToken =  jwt.verify(token, process.env.JWT_SECRET);
         req.user = decodedToken;
-        console.log(req.user);
         next();
     } catch(err){
         const httpError = createHttpError(400, 'Invalid Token Provided');
