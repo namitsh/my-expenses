@@ -1,13 +1,18 @@
 const accounts = require('../services').accounts;
+const users = require('../services').users;
 const createHttpError = require('http-errors');
 
 exports.createAccount = async (req, res, next)=>{
     // convert the
-
+    
     const {name, balance, type, description} = req.body;
-
+    // I am assuming here that user is saved in req.user;
+    const userId = req.user._id; 
     try{
-        const account = await accounts.create(name, balance, type, description);
+        // validate user.
+        const user = await users.get(userId)
+        console.log(user._id);
+        const account = await accounts.create(name, balance, type, description, user._id);
         return res.status(201).json(account);
     }
     catch(err){
@@ -18,8 +23,11 @@ exports.createAccount = async (req, res, next)=>{
 
 exports.getAccount = async (req, res, next)=>{
     const id = req.params.id;
+    // I am assuming here that user is saved in req.user;
+    const userId = req.user._id; 
     try{
-        const account = await accounts.get(id);
+        const user = await users.get(userId)
+        const account = await accounts.get(id, user._id);
         res.status(200).json(account);
     }
     catch(err){
@@ -29,8 +37,11 @@ exports.getAccount = async (req, res, next)=>{
 }
 
 exports.listAccounts = async (req,res, next)=>{
+    // I am assuming here that user is saved in req.user;
+    const userId = req.user._id; 
     try{
-        const acc = await accounts.getAll();
+        const user = await users.get(userId)
+        const acc = await accounts.getAll(user._id);
         res.status(200).json(acc);
     }
     catch(err){
@@ -43,8 +54,12 @@ exports.updateAccount = async (req,res, next)=>{
     // do something.
     const id = req.params.id;
     const data = req.body;
+    // I am assuming here that user is saved in req.user;
+    const userId = req.user._id; 
+    
     try{
-        const updatedAccount = await accounts.update(id, data);
+        const user = await users.get(userId)
+        const updatedAccount = await accounts.update(id, data, user._id);
         res.status(200).json(updatedAccount);
     }
     catch(err){
@@ -56,8 +71,12 @@ exports.updateAccount = async (req,res, next)=>{
 exports.deleteAccount = async (req,res, next)=>{
     // do something
     const id = req.params.id;
+    // I am assuming here that user is saved in req.user;
+    const userId = req.user._id; 
+    
     try{
-        const deletedAccount = await accounts.delete(id);
+        const user = await users.get(userId)
+        const deletedAccount = await accounts.delete(id, user._id);
         res.status(202).json(deletedAccount);
     }
     catch(err){

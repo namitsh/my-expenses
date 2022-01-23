@@ -1,10 +1,10 @@
 const Transaction = require('../models').transaction;
 const Account = require('../models').account;
 
-exports.create = async (data)=>{
+exports.create = async (data, userId)=>{
     // data is object;
 
-    if(!data.account || !data.transaction_type || !data.amount){ 
+    if(!data.account || !data.transaction_type || !data.amount || !data.user){ 
         return Promise.reject('Invalid Argument'); 
     }
 
@@ -47,10 +47,10 @@ exports.create = async (data)=>{
     }
 }
 
-exports.get = async (id)=>{
+exports.get = async (id, userId)=>{
     if(!id) return Promise.reject('Invalid Arguments')
     try{
-        const transaction = await Transaction.findById(id);
+        const transaction = await Transaction.findOne({_id: id, user:userId});
         if(!transaction) return Promise.reject(`Transaction with id ${id} not found`);
         return Promise.resolve(transaction);
     } catch(err){
@@ -58,16 +58,18 @@ exports.get = async (id)=>{
     }
 }
 
-exports.getAll = async ()=>{
+exports.getAll = async (userId)=>{
+    // get all transactions of loggedIn user
+    if(!userId) return Promise.reject('Invalid Argument');
     try{
-        const transactions = await Transaction.find();
+        const transactions = await Transaction.find({user: userId});
         return Promise.resolve(transactions);
     } catch(err) {
         return Promise.reject(err);
     }
 }
 
-exports.update = async (id, data)=>{
+exports.update = async (id, data, userId)=>{
     // do something
     if(data.transaction_type || data.account){
         return Promise.reject('Invalid Argument');
@@ -77,11 +79,11 @@ exports.update = async (id, data)=>{
 
         session.startTransaction();
         
-        const transaction = await Transaction.findById(id).session(session);
+        const transaction = await Transaction.findOne({_id: id, user: userId}).session(session);
         if(!transaction){
             throw new Error(`Transaction with id ${id} not found`)
         }
-        const acc = await Account.findById(transaction.account).session(session);      
+        const acc = await Account.findOne({_id: transaction.account, user:userId}).session(session);      
         if(!acc){
             throw new Error(`Account with id ${acc._id} not found`)
         }
@@ -113,9 +115,7 @@ exports.update = async (id, data)=>{
         }        
         // update the account
         await acc.save();
-        console.log(acc.balance);
         await transaction.save();
-        console.log(transaction)
         await session.commitTransaction()
         return Promise.resolve(transaction);
         
@@ -127,10 +127,10 @@ exports.update = async (id, data)=>{
     }
 }
 
-exports.delete = async (id)=>{
+exports.delete = async (id, userId)=>{
     if(!id) return Promise.reject('Invalid Arguments')
     try{
-        const deletedTransaction = await Transaction.findByIdAndDelete(id);
+        const deletedTransaction = await Transaction.findOneAndDelete({_id: id, user:userId});
         if(!deletedTransaction){
             return Promise.reject(`Account with id ${id} not found`);
         }

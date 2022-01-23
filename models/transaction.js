@@ -38,6 +38,11 @@ const transactionSchema = new Schema({
         type: String, 
         required: true,
         enum: ["expense", "income"]
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 });
 const Transaction = mongoose.model('Transaction', transactionSchema);

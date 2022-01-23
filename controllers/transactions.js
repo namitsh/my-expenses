@@ -1,11 +1,15 @@
 const transactions = require('../services').transactions;
-const accounts = require('../services').accounts;
+const users = require('../services').users;
 const createHttpError = require('http-errors');
 
 exports.createTransaction = async (req,res,next)=>{
     // do something
     const data = req.body;
+    // I am assuming here that user is saved in req.user;
+    const userId = req.user._id; 
     try{
+        const user = await users.get(userId);
+        data.user = user._id;
         const transaction = await transactions.create(data);
         return res.status(201).json(transaction);
     } catch(err) {
@@ -17,8 +21,11 @@ exports.createTransaction = async (req,res,next)=>{
 exports.getTransaction = async (req, res, next)=>{
     // do something
     const id = req.params.id;
+    // I am assuming here that user is saved in req.user;
+    const userId = req.user._id; 
     try{
-        const transaction = await transactions.get(id);
+        const user = await users.get(userId);
+        const transaction = await transactions.get(id, user._id);
         res.status(200).json(transaction);
     } catch(err){
         const httpError = createHttpError(400, err);
@@ -27,8 +34,10 @@ exports.getTransaction = async (req, res, next)=>{
 }
 
 exports.listTransactions = async (req,res, next)=>{
+    const userId = req.user._id;
     try{
-        const transList = await transactions.getAll();
+        const user = await users.get(userId);
+        const transList = await transactions.getAll(user._id);
         res.status(200).json(transList);
     } catch(err) {
         const httpError = createHttpError(400, err);
@@ -39,8 +48,10 @@ exports.listTransactions = async (req,res, next)=>{
 exports.updateTransaction = async (req,res, next)=>{
     const id = req.params.id;
     const data = req.body;
+    const userId = req.user._id;
     try{
-        const transaction = await transactions.update(id, data);
+        const user = await users.get(userId);
+        const transaction = await transactions.update(id, data, user._id);
         res.status(200).json(transaction);
     } catch(err){
         const httpError = createHttpError(400, err);
@@ -50,7 +61,9 @@ exports.updateTransaction = async (req,res, next)=>{
 
 exports.deleteTransaction = async (req,res, next)=>{
     const id = req.params.id;
+    const userId = req.user._id;
     try{
+        const user = await user.get(userId);
         const deletedTransaction = await transactions.delete(id);
         res.status(202).json(deletedTransaction);
     }
@@ -58,5 +71,4 @@ exports.deleteTransaction = async (req,res, next)=>{
         const httpError = createHttpError(400, err);
         next(httpError);
     }
-
 }

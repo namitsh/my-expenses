@@ -2,7 +2,7 @@
 
 const express = require('express');
 const morgan = require('morgan');
-const { errorHandler } = require('./middlewares');
+const { errorHandler, auth } = require('./middlewares');
 const app = express();
 
 // basic express config.
@@ -12,8 +12,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended:true }));
 
 // routers;
-app.use('/accounts', require('./routes').accounts)
-app.use('/transactions', require('./routes').transactions)
+app.use('/accounts', auth.isAuthorized, require('./routes').accounts)
+app.use('/transactions', auth.isAuthorized, require('./routes').transactions)
 app.use('/users', require('./routes').users);
 
 // Handle 404

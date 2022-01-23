@@ -26,6 +26,11 @@ const accountSchema = new Schema({
     description: {
         type: String, 
         max: 100
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 }, {
     timestamps: true

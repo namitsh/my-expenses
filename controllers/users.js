@@ -20,8 +20,8 @@ exports.loginUser = async (req,res,next)=>{
         if(!user){
             return next(new createHttpError.Unauthorized('Invalid email or password')); 
         }
-        const token = user.generateAuthToken();
-        res.status(200).json({...user, token});
+        const token = await user.generateAuthToken();
+        res.status(200).json({user, token});
 
     } catch(err){
         next(createHttpError(400,err))
@@ -30,9 +30,9 @@ exports.loginUser = async (req,res,next)=>{
 
 exports.getUser = async (req,res,next)=>{
     // do something
-    const id = req.params.id;
+    const userId = req.user._id;
     try{
-        const user = await users.get(id);
+        const user = await users.get(userId);
         res.status(200).json(user);
     } catch(err){
         next(createHttpError(400,err))
@@ -41,20 +41,25 @@ exports.getUser = async (req,res,next)=>{
 
 exports.updateUserPassword = async (req,res,next)=>{
     // do something
-    const id = req.params.id;
     const {oldPassword, newPassword} = req.body;
+    const userId = req.user._id;
     try{
-        await users.updatePassword(id, oldPassword, newPassword);
-        res.status(204).end();
+        // TODO: it seems, we don't need to do do db query after every request to get user. :( 
+            // refractor all controllers, means, all controller :huh. 
+        const user = await users.get(userId);
+        const success = await users.updatePassword(user._id, oldPassword, newPassword);
+        res.status(202).json(success);
     } catch(err){
         next(createHttpError(400,err))
     }
 }
 
-exports.deleteUser = async ()=>{
+exports.deleteUser = async (req, res, next)=>{
     // do something
+    const userId = req.user._id;
     try{
-
+        const user = await users.delete(userId);
+        res.status(202).json(user);
     } catch(err){
         next(createHttpError(400,err))
     }
