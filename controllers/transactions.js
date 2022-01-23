@@ -63,8 +63,8 @@ exports.deleteTransaction = async (req,res, next)=>{
     const id = req.params.id;
     const userId = req.user._id;
     try{
-        const user = await user.get(userId);
-        const deletedTransaction = await transactions.delete(id);
+        const user = await users.get(userId);
+        const deletedTransaction = await transactions.delete(id, userId);
         res.status(202).json(deletedTransaction);
     }
     catch(err){

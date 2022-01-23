@@ -7,7 +7,7 @@ const devErrorHandler = (err, req, res, next)=>{
         name: err.name,
         message: err.message,
         path: err.path,
-        errors: err.errors,
+        errors: err.errors[0],
         stack: err.stack
     });
     next();
@@ -22,7 +22,7 @@ const prodErrorHandler = (err, req, res, next)=>{
 
     } else if(err.name === 'ValidationError'){
 
-    } else if(err.name === 'Bad Request'){
+    } else if(err.name === 'Bad Request' || err.name === 'BadRequestError'){
 
     }
     else{
