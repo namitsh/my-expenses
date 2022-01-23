@@ -7,7 +7,7 @@ const devErrorHandler = (err, req, res, next)=>{
         name: err.name,
         message: err.message,
         path: err.path,
-        errors: err.errors[0],
+        errors: err.errors && err.errors.isArray()? err.errors[0]:err.errors,
         stack: err.stack
     });
     next();

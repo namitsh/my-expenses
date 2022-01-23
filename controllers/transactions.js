@@ -1,6 +1,7 @@
 const transactions = require('../services').transactions;
 const users = require('../services').users;
 const createHttpError = require('http-errors');
+const {filterQuery} = require('../helpers')
 
 exports.createTransaction = async (req,res,next)=>{
     // do something
@@ -35,9 +36,12 @@ exports.getTransaction = async (req, res, next)=>{
 
 exports.listTransactions = async (req,res, next)=>{
     const userId = req.user._id;
+    let query = req.query;
     try{
+        let transList;
         const user = await users.get(userId);
-        const transList = await transactions.getAll(user._id);
+        query = filterQuery(query);
+        transList = await transactions.getAll(user._id, query);
         res.status(200).json(transList);
     } catch(err) {
         const httpError = createHttpError(400, err);

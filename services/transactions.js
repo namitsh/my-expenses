@@ -58,11 +58,11 @@ exports.get = async (id, userId)=>{
     }
 }
 
-exports.getAll = async (userId)=>{
+exports.getAll = async (userId, query)=>{
     // get all transactions of loggedIn user
     if(!userId) return Promise.reject('Invalid Argument');
     try{
-        const transactions = await Transaction.find({user: userId});
+        const transactions = await Transaction.find({user: userId, ...query});
         return Promise.resolve(transactions);
     } catch(err) {
         return Promise.reject(err);
