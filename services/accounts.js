@@ -31,7 +31,6 @@ exports.getAll = async (userId)=>{
     if(!userId) return Promise.reject('Invalid Arguments');
     try{
         const accounts = await Account.find({user: userId});
-        console.log(accounts);
         return Promise.resolve(accounts);
     } catch(err) {
         return Promise.reject(err);
@@ -87,12 +86,15 @@ exports.update = async (id, data, userId)=>{
                 }  
             }
             transaction = new Transaction(transactionObj);
-            await transaction.save({session: session});
             result.balance = data.balance 
         }
-        
-        const updatedAccount = await Account.findOneAndUpdate({_id: id, user:userId}, result,
-            {new:true, runValidators: true}).session(session);
+
+        const [ _, updatedAccount] = await Promise.all(
+            [
+                transaction.save({session: session}),
+                Account.findOneAndUpdate({_id: id, user:userId}, result,
+                    {new:true, runValidators: true}).session(session)
+            ]);
         if(!updatedAccount){
             throw new Error(`Account with id ${id} not found`)
         }
@@ -125,7 +127,6 @@ exports.deleteAll = async (accountIds, userId)=>{
     if(!accountIds || !userId) return Promise.reject('Invalid Arguments')
     try{
         const deleted = await Account.deleteMany({_id: accountIds, user: userId});
-        console.log('In accounts')
         return Promise.resolve(deleted);
     } catch(err){
         return Promise.reject(err);

@@ -29,11 +29,12 @@ exports.create = async (data, userId)=>{
         // update the account { 
         // TODO: probably would change this way afterwards(findByIdAndUpdate mainly) }
         account.balance = balance;
-        await account.save();
         
         // create a transaction
         const transaction = new Transaction(data);
-        await transaction.save({ session });
+
+        // save both 
+        await Promise.all([account.save(), transaction.save({ session })])
         
         // commit the transaction 
         await session.commitTransaction()
@@ -144,8 +145,6 @@ exports.deleteAll = async (userId, accountId) =>{
     if(!userId) return Promise.reject('Invalid Arguments');
     try{
         const result = await Transaction.deleteMany({user: userId, account: accountId});
-        console.log('In transactions')
-        console.log(result);
         return Promise.resolve('Success');  
     } catch(err) {
         return Promise.reject(err);
