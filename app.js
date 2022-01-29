@@ -3,10 +3,15 @@
 const express = require('express');
 const morgan = require('morgan');
 const { errorHandler, auth } = require('./middlewares');
+const {winston} = require('./config');
+const { logger } = require('./config/winston');
 const app = express();
 
 // basic express config.
-app.use(morgan('dev'))
+app.use(morgan('combined', 
+    {stream: {
+        write: (message) => logger.http(message.trim)
+    }}));
 app.disable('x-powered-by');
 app.use(express.json());
 app.use(express.urlencoded({ extended:true }));
