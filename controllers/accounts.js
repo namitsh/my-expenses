@@ -10,7 +10,6 @@ exports.createAccount = async (req, res, next)=>{
     try{
         // validate user.
         const user = await users.get(userId)
-        console.log(user._id);
         const account = await accounts.create(name, balance, type, description, user._id);
         return res.status(201).json(account);
     }

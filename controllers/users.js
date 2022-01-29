@@ -65,7 +65,6 @@ exports.deleteUser = async (req, res, next)=>{
         for(let accObj of accountList){
             acc.push(accObj._id.toString());
         }
-        console.log(acc);
         // delete the transactions;
         const successTrans = await transactions.deleteAll(userId, acc);
         const successAccount = await accounts.deleteAll(acc, userId);
